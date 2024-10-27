@@ -13,6 +13,8 @@ blueIndustrial = 0
 blueOffice = 0
 redIndustrial = 0
 redOffice = 0
+totalPossible = 0
+
 
 # SERVICE CHECK FUNCTIONS
 
@@ -94,38 +96,79 @@ def checkSMB():
         print("SMB is NOT WORKING")
         return False
 
-# Scoring Function
-def givePoints(team):
-    if team == blueIndustrial:
-        blueIndustrial += 10
-    elif team == blueOffice:
-        blueOffice += 10
-    elif team == redIndustrial:
-        redIndustrial += 10
-    elif team == redOffice:
-        redOffice += 10
+serviceType = {
+    "apache":"office",
+    "smtp":"office",
+    "smb":"office",
+    "dns":"office",
+    "ldap":"office",
+    "openplc":"industrial",
+    "sql":"industrial",
+    "nodered":"industrial"
+}
 
+# Scoring Function
+def givePoints(service, result):
+    global blueIndustrial, blueOffice, redOffice, redIndustrial, totalPossible
+
+    if result == True:
+        if serviceType[service] == 'office':
+            blueOffice += 10
+        elif serviceType[service] == 'industrial':
+            blueIndustrial += 10
+    elif result == False:
+        if serviceType[service] == 'office':
+            redOffice += 10
+        elif serviceType[service] == 'industrial':
+            redIndustrial += 10
+    
+    totalPossible += 10
 
 def main():
     while True:
-        # Webserver Check
-        apache = checkWeb('10.0.1.3', '80')
-        # OpenPLC Check
-        openplc = checkWeb('10.0.2.2', '8080')
-        # NodeRed Check
-        nodered = checkWeb('10.0.2.3', '1880')
+        try:
+            # Webserver Check
+            apache = checkWeb('10.0.1.3', '80')
+            # OpenPLC Check
+            openplc = checkWeb('10.0.2.2', '8080')
+            # NodeRed Check
+            nodered = checkWeb('10.0.2.3', '1880')
 
-        # Non-Web Checks
-        dns = checkDNS()
-        ldap = checkLDAP()
-        sql = checkSQL()
-        smtp = checkSMTP()
-        smb = checkSMB()
+            # Non-Web Checks
+            dns = checkDNS()
+            ldap = checkLDAP()
+            sql = checkSQL()
+            smtp = checkSMTP()
+            smb = checkSMB()
 
-        # Sleep and Clear
-        time.sleep(30)
-        subprocess.run('clear')
-        
+            # List of results
+            checkResults = {"apache":apache, 
+                            "openplc":openplc, 
+                            "nodered":nodered, 
+                            "dns":dns, 
+                            "ldap":ldap, 
+                            "sql":sql, 
+                            "smtp":smtp, 
+                            "smb":smb}
+            
+
+            # Calculate points
+            for serviceName in checkResults:
+                givePoints(serviceName, checkResults[serviceName])
+
+            # Print points
+            print(f'\nScoreboard\nBlue Team - Office: {blueOffice}')
+            print(f'Blue Team - Industrial: {blueIndustrial}')
+            print(f'Red Team - Office: {redOffice}')
+            print(f'Red Team - Industrial: {redIndustrial}')
+            print(f'Total Possible: {totalPossible}')
+
+            # Sleep and Clear
+            time.sleep(30)
+            subprocess.run('clear')
+
+        except KeyboardInterrupt:
+            break
 
 
 if __name__ == '__main__':
