@@ -7,6 +7,7 @@ from smb.SMBConnection import SMBConnection
 import time
 import os
 import subprocess
+import sqlite3
 
 # Team Scores
 blueIndustrial = 0
@@ -14,6 +15,8 @@ blueOffice = 0
 redIndustrial = 0
 redOffice = 0
 totalPossible = 0
+SCOREBOARD_DATABASE = "score_data.db"
+SCOREBOARD_TABLE = "scores"
 
 
 # SERVICE CHECK FUNCTIONS
@@ -97,15 +100,28 @@ def checkSMB():
         return False
 
 serviceType = {
-    "apache":"office",
-    "smtp":"office",
-    "smb":"office",
-    "dns":"office",
-    "ldap":"office",
-    "openplc":"industrial",
-    "sql":"industrial",
-    "nodered":"industrial"
+    "APACHE":"office",
+    "SMTP":"office",
+    "SMB":"office",
+    "DNS":"office",
+    "LDAP":"office",
+    "OPENPLC":"industrial",
+    "SQL":"industrial",
+    "NODERED":"industrial"
 }
+
+def increase_blue_database(service):
+    connection = sqlite3.connect(SCOREBOARD_DATABASE)
+    cursor = connection.cursor()
+    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET blue_points = blue_points + 10 WHERE service = f{service}")
+    connection.close()
+
+def increase_red_database(service):
+    connection = sqlite3.connect(SCOREBOARD_DATABASE)
+    cursor = connection.cursor()
+    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET red_points = blue_points + 10 WHERE service = f{service}")
+    connection.close()
+
 
 # Scoring Function
 def givePoints(service, result):
@@ -113,16 +129,14 @@ def givePoints(service, result):
 
     if result == True:
         if serviceType[service] == 'office':
-            blueOffice += 10
+            increase_blue_database(service)
         elif serviceType[service] == 'industrial':
-            blueIndustrial += 10
+            increase_blue_database(service)
     elif result == False:
         if serviceType[service] == 'office':
-            redOffice += 10
+            increase_red_database(service)
         elif serviceType[service] == 'industrial':
-            redIndustrial += 10
-    
-    totalPossible += 10
+            increase_red_database(service)
 
 def main():
     while True:
@@ -142,14 +156,14 @@ def main():
             smb = checkSMB()
 
             # List of results
-            checkResults = {"apache":apache, 
-                            "openplc":openplc, 
-                            "nodered":nodered, 
-                            "dns":dns, 
-                            "ldap":ldap, 
-                            "sql":sql, 
-                            "smtp":smtp, 
-                            "smb":smb}
+            checkResults = {"APACHE":apache, 
+                            "OPENPLC":openplc, 
+                            "NODERED":nodered, 
+                            "DNS":dns, 
+                            "LDAP":ldap, 
+                            "SQL":sql, 
+                            "SMTP":smtp, 
+                            "SMB":smb}
             
 
             # Calculate points
