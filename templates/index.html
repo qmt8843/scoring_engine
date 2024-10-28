@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="5">
+    <title>Scoreboard</title>
+    <style>
+        body {
+            background-color: rgb(31, 31, 31);
+            font-family: Verdana, sans-serif;
+            margin: 20px;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        tr {
+            height: 40px;
+        }
+        .active {
+            background-color: green; /* Green for active services */
+            color: white;
+        }
+        .inactive {
+            background-color: red; /* Red for inactive services */
+            color: white;
+        }
+        .score-bar-container {
+            display: flex;
+            height: 20px;
+            background-color: transparent; /* Purple background for the score bar */
+            border-radius: 5px; /* Optional: Adds rounded corners */
+            overflow: hidden; /* Ensures children fit within the container */
+        }
+        .blue {
+            background-color: blue;
+        }
+        .red {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Scoreboard</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in scoreboard %}
+            <tr>
+                <td class="{{ 'active' if entry.is_active else 'inactive' }}">{{ entry.service }}</td>
+                <td>
+                    <div class="score-bar-container">
+                        <div class="blue" style="width: {{ entry.blue_points }}%;"></div>
+                        <div class="red" style="width: {{ entry.red_points }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
