@@ -108,7 +108,7 @@ def increase_blue_service_score(service, is_active):
     connection = sqlite3.connect(SCOREBOARD_DATABASE)
     cursor = connection.cursor()
     cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET blue_points = blue_points + ? WHERE service = ?", (10, service))
-    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET is_active = ? WHERE service = ?)", (is_active, service))
+    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET is_active = ? WHERE service = ?", (is_active, service))
     connection.commit()
     connection.close()
 
