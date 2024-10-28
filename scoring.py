@@ -5,16 +5,10 @@ import mysql.connector
 import socket
 from smb.SMBConnection import SMBConnection
 import time
-import os
 import subprocess
 import sqlite3
 
 # Team Scores
-blueIndustrial = 0
-blueOffice = 0
-redIndustrial = 0
-redOffice = 0
-totalPossible = 0
 SCOREBOARD_DATABASE = "score_data.db"
 SCOREBOARD_TABLE = "scores"
 
@@ -110,16 +104,20 @@ serviceType = {
     "NODERED":"industrial"
 }
 
-def increase_blue_database(service):
+def increase_blue_service_score(service, is_active):
     connection = sqlite3.connect(SCOREBOARD_DATABASE)
     cursor = connection.cursor()
-    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET blue_points = blue_points + 10 WHERE service = f{service}")
+    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET blue_points = blue_points + ? WHERE service = ?", (10, service))
+    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET is_active = ? WHERE service = ?)", (is_active, service))
+    connection.commit()
     connection.close()
 
-def increase_red_database(service):
+def increase_red_service_score(service, is_active):
     connection = sqlite3.connect(SCOREBOARD_DATABASE)
     cursor = connection.cursor()
-    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET red_points = blue_points + 10 WHERE service = f{service}")
+    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET red_points = red_points + ? WHERE service = ?", (10, service))
+    cursor.execute(f"UPDATE {SCOREBOARD_TABLE} SET is_active = ? WHERE service = ?", (is_active, service))
+    connection.commit()
     connection.close()
 
 
@@ -128,15 +126,9 @@ def givePoints(service, result):
     global blueIndustrial, blueOffice, redOffice, redIndustrial, totalPossible
 
     if result == True:
-        if serviceType[service] == 'office':
-            increase_blue_database(service)
-        elif serviceType[service] == 'industrial':
-            increase_blue_database(service)
+        increase_blue_service_score(service, 1)
     elif result == False:
-        if serviceType[service] == 'office':
-            increase_red_database(service)
-        elif serviceType[service] == 'industrial':
-            increase_red_database(service)
+        increase_red_service_score(service, 0)
 
 def main():
     while True:
@@ -170,12 +162,7 @@ def main():
             for serviceName in checkResults:
                 givePoints(serviceName, checkResults[serviceName])
 
-            # Print points
-            print(f'\nScoreboard\nBlue Team - Office: {blueOffice}')
-            print(f'Blue Team - Industrial: {blueIndustrial}')
-            print(f'Red Team - Office: {redOffice}')
-            print(f'Red Team - Industrial: {redIndustrial}')
-            print(f'Total Possible: {totalPossible}')
+            print("UPDATED POINTS")
 
             # Sleep and Clear
             time.sleep(30)
