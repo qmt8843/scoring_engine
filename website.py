@@ -86,8 +86,10 @@ def scoreboard():
             red_norm = 50
         elif blue_og==0:
             red_norm = 100
+            blue_norm = 0
         elif red_og==0 :
             blue_norm = 100
+            red_norm = 0
         else:
             total = blue_og+red_og
             blue_norm = blue_og/total*100
